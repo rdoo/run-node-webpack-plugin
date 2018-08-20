@@ -17,6 +17,7 @@ export interface RunNodeWebpackPluginOptions {
 export default class RunNodeWebpackPlugin {
     options: RunNodeWebpackPluginOptions;
     isWebpackInWatchMode: boolean = false;
+    errorsInPrevCompilation: boolean = false;
     scriptName: string;
     scriptPath: string;
     scriptProcess: ChildProcess;
@@ -49,6 +50,7 @@ export default class RunNodeWebpackPlugin {
 
             // dont run if webpack compilation contains errors and ignoreErrors option is falsy
             if (stats.compilation.errors.length > 0 && !this.options.ignoreErrors) {
+                this.errorsInPrevCompilation = true;
                 return;
             }
 
@@ -61,10 +63,14 @@ export default class RunNodeWebpackPlugin {
                 return;
             }
 
-            // always run node if runOnlyOnChanges option is falsy
-            let shouldRun: boolean = !this.options.runOnlyOnChanges;
+            let shouldRun: boolean = false;
 
-            if (!shouldRun) {
+            if (!this.options.runOnlyOnChanges || this.errorsInPrevCompilation) {
+                // always run node script if runOnlyOnChanges option is falsy or there were errors in previous compilation
+                shouldRun = true;
+                this.errorsInPrevCompilation = false;
+            } else {
+                // else check watched scripts for changes
                 if (this.options.scriptsToWatch && this.options.scriptsToWatch.length > 0) {
                     // if scriptsToWatch option is set then check if any of the given scripts changed
                     for (const scriptName of this.options.scriptsToWatch) {
