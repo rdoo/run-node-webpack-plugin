@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { join, normalize, parse } from 'path';
-import { spy } from 'sinon';
+import { SinonSpy, spy } from 'sinon';
 
 import RunNodeWebpackPlugin, { RunNodeWebpackPluginOptions } from '../src/index';
 import { Logger, LoggerMessages } from '../src/logger';
@@ -63,8 +63,8 @@ describe('RunNodeWebpackPlugin', () => {
     });
 
     describe('Logs', () => {
-        let consoleLogSpy;
-        let mockedStats;
+        let consoleLogSpy: SinonSpy;
+        let mockedStats: any;
 
         beforeEach(() => {
             consoleLogSpy = spy(console, 'log');

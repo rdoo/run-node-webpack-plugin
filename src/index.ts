@@ -161,7 +161,7 @@ export default class RunNodeWebpackPlugin {
     }
 }
 
-function findMatchingScriptName(scriptNameToFind, scriptNames): string {
+function findMatchingScriptName(scriptNameToFind: string, scriptNames: string[]) {
     // check for literal matching
     for (const name of scriptNames) {
         if (name === scriptNameToFind) {

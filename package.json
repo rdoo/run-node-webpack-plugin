@@ -5,6 +5,7 @@
   "author": "rdoo",
   "license": "MIT",
   "main": "dist/cjs.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
