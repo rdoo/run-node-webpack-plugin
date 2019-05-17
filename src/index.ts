@@ -12,6 +12,7 @@ export interface RunNodeWebpackPluginOptions {
     runOnlyInWatchMode?: boolean;
     runOnlyInNormalMode?: boolean;
     ignoreErrors?: boolean;
+    nodeArgs?: string[];
 }
 
 export default class RunNodeWebpackPlugin {
@@ -29,7 +30,8 @@ export default class RunNodeWebpackPlugin {
             runOnlyOnChanges: true,
             runOnlyInWatchMode: false,
             runOnlyInNormalMode: false,
-            ignoreErrors: false
+            ignoreErrors: false,
+            nodeArgs: [],
         };
         this.options = Object.assign(defaultOptions, passedOptions);
     }
@@ -152,7 +154,7 @@ export default class RunNodeWebpackPlugin {
             } else {
                 Logger.info(LoggerMessages.STARTING + this.scriptName);
                 try {
-                    this.scriptProcess = fork(this.scriptPath);
+                    this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs);
                 } catch (error) {
                     console.error(error);
                 }
