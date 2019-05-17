@@ -111,5 +111,10 @@ When set to `true` plugin will try to run the script even when webpack compilati
 
 **Default: `false`**
 
+### `nodeArgs: string[]`
+List of string arguments to pass to the node script.
+
+**Default: `[]`**
+
 ## License
 Copyright © 2018 [rdoo](https://github.com/rdoo). Released under the MIT license.
