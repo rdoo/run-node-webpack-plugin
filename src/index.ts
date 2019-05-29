@@ -145,7 +145,7 @@ export default class RunNodeWebpackPlugin {
             if (this.scriptProcess && this.scriptProcess.connected) {
                 // if scriptProcess is running then kill it and start once again after it closes
                 Logger.info(LoggerMessages.RESTARTING + this.scriptName);
-                this.scriptProcess.on('close', () => (this.scriptProcess = fork(this.scriptPath)));
+                this.scriptProcess.on('close', () => (this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs)));
                 try {
                     this.scriptProcess.kill('SIGKILL');
                 } catch (error) {
