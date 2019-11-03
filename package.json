@@ -34,19 +34,19 @@
     "test": "mocha -r ts-node/register test/**/*.test.ts"
   },
   "devDependencies": {
-    "@types/chai": "4.1.7",
-    "@types/mocha": "5.2.6",
-    "@types/node": "12.0.2",
-    "@types/sinon": "7.0.11",
-    "@types/webpack": "4.4.32",
+    "@types/chai": "4.2.4",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.12.5",
+    "@types/sinon": "7.5.0",
+    "@types/webpack": "4.39.8",
     "chai": "4.2.0",
-    "mocha": "6.1.4",
-    "rimraf": "2.6.3",
-    "sinon": "7.3.2",
-    "ts-node": "8.1.1",
-    "typescript": "3.4.5"
+    "mocha": "6.2.2",
+    "rimraf": "3.0.0",
+    "sinon": "7.5.0",
+    "ts-node": "8.4.1",
+    "typescript": "3.6.4"
   },
   "peerDependencies": {
-    "webpack": "^4.32.2"
+    "webpack": "^4.41.2"
   }
 }
