@@ -56,8 +56,12 @@ export default class RunNodeWebpackPlugin {
                 return;
             }
 
-            const outputAssets = stats.compilation.assets;
+            const { compilation } = stats;
+            const { compiler } = compilation;
+            const outputAssets = compilation.assets;
+
             const outputAssetNames: string[] = Object.keys(outputAssets);
+            const outputPath = compilation.getPath(compiler.outputPath, {});
 
             // check if output assets dont exist. idk if this can really happen
             if (outputAssetNames.length < 1) {
@@ -103,7 +107,7 @@ export default class RunNodeWebpackPlugin {
                     // if it can not be found in webpack output then check if it exists in the file system
                     this.scriptName = findMatchingScriptName(this.options.scriptToRun, outputAssetNames);
                     if (this.scriptName) {
-                        this.scriptPath = outputAssets[this.scriptName].existsAt;
+                        this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
                     } else if (existsSync(this.options.scriptToRun)) {
                         this.scriptName = parse(this.options.scriptToRun).base;
                         this.scriptPath = normalize(this.options.scriptToRun);
@@ -124,14 +128,14 @@ export default class RunNodeWebpackPlugin {
                     if (outputAssetNames.length === 1) {
                         // if theres only 1 file in output assets choose it
                         this.scriptName = outputAssetNames[0];
-                        this.scriptPath = outputAssets[this.scriptName].existsAt;
+                        this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
                     } else {
                         // otherwise try to find scripts named 'server.js' or 'index.js'
                         this.scriptName =
                             findMatchingScriptName('server.js', outputAssetNames) ||
                             findMatchingScriptName('index.js', outputAssetNames);
                         if (this.scriptName) {
-                            this.scriptPath = outputAssets[this.scriptName].existsAt;
+                            this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
                         }
                     }
                 }
