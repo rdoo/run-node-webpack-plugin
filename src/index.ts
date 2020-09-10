@@ -57,7 +57,8 @@ export default class RunNodeWebpackPlugin {
             }
 
             const { compilation } = stats;
-            const { compiler } = compilation;
+            //  @ts-ignore
+            const { compiler, emittedAssets } = compilation;
             const outputAssets = compilation.assets;
 
             const outputAssetNames: string[] = Object.keys(outputAssets);
@@ -81,7 +82,7 @@ export default class RunNodeWebpackPlugin {
                     // if scriptsToWatch option is set then check if any of the given scripts changed
                     for (const scriptName of this.options.scriptsToWatch) {
                         const matchedName: string = findMatchingScriptName(scriptName, outputAssetNames);
-                        if (matchedName && outputAssets[matchedName].emitted) {
+                        if (matchedName && emittedAssets.has(matchedName)) {
                             shouldRun = true;
                             break;
                         }
@@ -89,7 +90,7 @@ export default class RunNodeWebpackPlugin {
                 } else {
                     // if scriptsToWatch option is NOT set then check if any of the output assets changed
                     for (const assetName of outputAssetNames) {
-                        if (outputAssets[assetName].emitted) {
+                        if (emittedAssets.has(assetName)) {
                             shouldRun = true;
                             break;
                         }
