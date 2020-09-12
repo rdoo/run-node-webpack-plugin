@@ -38,7 +38,7 @@
     "@types/mocha": "5.2.7",
     "@types/node": "12.12.5",
     "@types/sinon": "7.5.0",
-    "@types/webpack": "4.39.8",
+    "@types/webpack": "4.41.22",
     "chai": "4.2.0",
     "mocha": "6.2.2",
     "rimraf": "3.0.0",
@@ -47,6 +47,6 @@
     "typescript": "3.6.4"
   },
   "peerDependencies": {
-    "webpack": "^4.41.2"
+    "webpack": "^4.42.0"
   }
 }
