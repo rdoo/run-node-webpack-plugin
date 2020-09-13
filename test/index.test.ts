@@ -72,13 +72,15 @@ describe('RunNodeWebpackPlugin', () => {
             consoleLogSpy = spy(console, 'log');
             mockedStats = {
                 compilation: {
+                    compiler: {},
+                    getPath: () => 'test',
                     errors: [],
                     assets: {
                         'server.js': {
                             emitted: true,
-                            existsAt: join('test', 'test-script.js')
+                            existsAt: join('test', 'server.js')
                         },
-                        'script.js': {
+                        'test-script.js': {
                             emitted: true,
                             existsAt: join('test', 'test-script.js')
                         }
@@ -95,7 +97,7 @@ describe('RunNodeWebpackPlugin', () => {
             const instance: RunNodeWebpackPlugin = new RunNodeWebpackPlugin();
             instance.apply(mockedCompiler);
             mockedStats.compilation.assets = {
-                'only-one-file.js': {
+                'test-script.js': {
                     emitted: true,
                     existsAt: join('test', 'test-script.js')
                 }
@@ -137,11 +139,11 @@ describe('RunNodeWebpackPlugin', () => {
             mockedStats.compilation.assets = {
                 'not-common-file-name1.js': {
                     emitted: true,
-                    existsAt: join('test', 'test-script.js')
+                    existsAt: join('test', 'not-common-file-name1.js')
                 },
                 'not-common-file-name2.js': {
                     emitted: true,
-                    existsAt: join('test', 'test-script.js')
+                    existsAt: join('test', 'not-common-file-name2.js')
                 }
             };
             mockedCompiler.doneFunction(mockedStats);
@@ -159,7 +161,7 @@ describe('RunNodeWebpackPlugin', () => {
         });
 
         it('should run normally when scriptToRun is set to one of outputted asset names', () => {
-            const scriptName: string = 'script.js';
+            const scriptName: string = 'test-script.js';
             const instance: RunNodeWebpackPlugin = new RunNodeWebpackPlugin({ scriptToRun: scriptName });
             instance.apply(mockedCompiler);
             mockedCompiler.doneFunction(mockedStats);

@@ -1,6 +1,6 @@
 import { ChildProcess, fork } from 'child_process';
 import { existsSync } from 'fs';
-import { normalize, parse } from 'path';
+import { join, normalize, parse } from 'path';
 import { Compiler, Stats } from 'webpack';
 
 import { Logger, LoggerMessages } from './logger';
@@ -18,6 +18,7 @@ export interface RunNodeWebpackPluginOptions {
 export default class RunNodeWebpackPlugin {
     options: RunNodeWebpackPluginOptions;
     isWebpackInWatchMode: boolean = false;
+    isFirstRun: boolean = true;
     errorsInPrevCompilation: boolean = false;
     scriptName: string;
     scriptPath: string;
@@ -51,18 +52,15 @@ export default class RunNodeWebpackPlugin {
             }
 
             // dont run if webpack compilation contains errors and ignoreErrors option is falsy
-            if (stats.compilation.errors.length > 0 && !this.options.ignoreErrors) {
+            if (stats.hasErrors() && !this.options.ignoreErrors) {
                 this.errorsInPrevCompilation = true;
                 return;
             }
 
             const { compilation } = stats;
-            //  @ts-ignore
-            const { compiler, emittedAssets } = compilation;
-            const outputAssets = compilation.assets;
-
+            const { compiler, emittedAssets, assets: outputAssets } = compilation;
             const outputAssetNames: string[] = Object.keys(outputAssets);
-            const outputPath = compilation.getPath(compiler.outputPath, {});
+            const outputPath = compilation.getPath(compiler.outputPath);
 
             // check if output assets dont exist. idk if this can really happen
             if (outputAssetNames.length < 1) {
@@ -82,7 +80,7 @@ export default class RunNodeWebpackPlugin {
                     // if scriptsToWatch option is set then check if any of the given scripts changed
                     for (const scriptName of this.options.scriptsToWatch) {
                         const matchedName: string = findMatchingScriptName(scriptName, outputAssetNames);
-                        if (matchedName && emittedAssets.has(matchedName)) {
+                        if (matchedName && (emittedAssets && emittedAssets.has(matchedName) || (outputAssets[matchedName] as any).emitted)) {
                             shouldRun = true;
                             break;
                         }
@@ -90,12 +88,17 @@ export default class RunNodeWebpackPlugin {
                 } else {
                     // if scriptsToWatch option is NOT set then check if any of the output assets changed
                     for (const assetName of outputAssetNames) {
-                        if (emittedAssets.has(assetName)) {
+                        if (emittedAssets && emittedAssets.has(assetName) || (outputAssets[assetName] as any).emitted) {
                             shouldRun = true;
                             break;
                         }
                     }
                 }
+            }
+
+            if (this.isFirstRun) {
+                shouldRun = true;
+                this.isFirstRun = false;
             }
 
             if (!shouldRun) {
@@ -108,7 +111,7 @@ export default class RunNodeWebpackPlugin {
                     // if it can not be found in webpack output then check if it exists in the file system
                     this.scriptName = findMatchingScriptName(this.options.scriptToRun, outputAssetNames);
                     if (this.scriptName) {
-                        this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
+                        this.scriptPath = join(outputPath, this.scriptName);
                     } else if (existsSync(this.options.scriptToRun)) {
                         this.scriptName = parse(this.options.scriptToRun).base;
                         this.scriptPath = normalize(this.options.scriptToRun);
@@ -129,14 +132,14 @@ export default class RunNodeWebpackPlugin {
                     if (outputAssetNames.length === 1) {
                         // if theres only 1 file in output assets choose it
                         this.scriptName = outputAssetNames[0];
-                        this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
+                        this.scriptPath = join(outputPath, this.scriptName);
                     } else {
                         // otherwise try to find scripts named 'server.js' or 'index.js'
                         this.scriptName =
                             findMatchingScriptName('server.js', outputAssetNames) ||
                             findMatchingScriptName('index.js', outputAssetNames);
                         if (this.scriptName) {
-                            this.scriptPath = compiler.outputFileSystem.join(outputPath, this.scriptName);
+                            this.scriptPath = join(outputPath, this.scriptName);
                         }
                     }
                 }
