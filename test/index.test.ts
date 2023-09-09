@@ -27,7 +27,8 @@ describe('RunNodeWebpackPlugin', () => {
             runOnlyInWatchMode: false,
             runOnlyInNormalMode: false,
             ignoreErrors: false,
-            nodeArgs: []
+            nodeArgs: [],
+            processArgs: {},
         };
 
         it('should retain default options when no instance arguments are passed', () => {
@@ -56,7 +57,8 @@ describe('RunNodeWebpackPlugin', () => {
                 runOnlyInWatchMode: true,
                 runOnlyInNormalMode: true,
                 ignoreErrors: true,
-                nodeArgs: []
+                nodeArgs: [],
+                processArgs: {},
             };
             const instance: RunNodeWebpackPlugin = new RunNodeWebpackPlugin(newOptions);
 
