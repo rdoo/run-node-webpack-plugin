@@ -1,4 +1,4 @@
-import { ChildProcess, fork } from 'child_process';
+import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { existsSync } from 'fs';
 import { join, normalize, parse } from 'path';
 import { Compiler, Stats } from 'webpack';
@@ -13,6 +13,7 @@ export interface RunNodeWebpackPluginOptions {
     runOnlyInNormalMode?: boolean;
     ignoreErrors?: boolean;
     nodeArgs?: string[];
+    processArgs?: ForkOptions;
 }
 
 export default class RunNodeWebpackPlugin {
@@ -33,6 +34,7 @@ export default class RunNodeWebpackPlugin {
             runOnlyInNormalMode: false,
             ignoreErrors: false,
             nodeArgs: [],
+            processArgs: {},
         };
         this.options = Object.assign(defaultOptions, passedOptions);
     }
@@ -153,7 +155,7 @@ export default class RunNodeWebpackPlugin {
             if (this.scriptProcess && this.scriptProcess.connected) {
                 // if scriptProcess is running then kill it and start once again after it closes
                 Logger.info(LoggerMessages.RESTARTING + this.scriptName);
-                this.scriptProcess.on('close', () => (this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs)));
+                this.scriptProcess.on('close', () => (this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs, this.options.processArgs)));
                 try {
                     this.scriptProcess.kill('SIGKILL');
                 } catch (error) {
@@ -162,7 +164,7 @@ export default class RunNodeWebpackPlugin {
             } else {
                 Logger.info(LoggerMessages.STARTING + this.scriptName);
                 try {
-                    this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs);
+                    this.scriptProcess = fork(this.scriptPath, this.options.nodeArgs, this.options.processArgs);
                 } catch (error) {
                     console.error(error);
                 }

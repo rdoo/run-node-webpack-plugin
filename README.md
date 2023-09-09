@@ -67,6 +67,28 @@ plugins: [
 ```
 In this example by default `webpackOutputScript.js` would be run but you can change it to an external script not connected with webpack build process, for example: `./path/to/external/file.js`.
 
+```js
+// ...
+entry: {
+    server: 'src/server.js',
+},
+output: {
+    path: 'build',
+    filename: '[name].js'
+},
+// ...
+plugins: [
+    new RunNodeWebpackPlugin({
+        scriptToRun: 'server.js',
+        processArgs: {
+            execArgv:['--inspect-brk']
+        } 
+    })
+],
+// ...
+```
+In this example a debugger is attached when running the script.
+
 ### `runOnlyOnChanges: boolean`
 When set to `true` plugin will run the script only when an actual change in webpack output files happens, otherwise after every webpack compilation.
 
@@ -113,6 +135,13 @@ When set to `true` plugin will try to run the script even when webpack compilati
 
 ### `nodeArgs: string[]`
 List of string arguments to pass to the node script.
+[See more information](https://nodejs.org/api/child_process.html#child_processforkmodulepath-args-options)
+
+**Default: `[]`**
+
+### `processArgs: Object`
+List of options to pass to the process executing the node script.
+[See more information](https://nodejs.org/api/child_process.html#child_processforkmodulepath-args-options)
 
 **Default: `[]`**
 
