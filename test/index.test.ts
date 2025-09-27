@@ -16,6 +16,7 @@ describe('RunNodeWebpackPlugin', () => {
       runOnlyInWatchMode: false,
       runOnlyInNormalMode: false,
       ignoreErrors: false,
+      processKillSignal: 'SIGKILL',
       nodeArgs: [],
       processArgs: {},
     };
@@ -46,6 +47,7 @@ describe('RunNodeWebpackPlugin', () => {
         runOnlyInWatchMode: true,
         runOnlyInNormalMode: true,
         ignoreErrors: true,
+        processKillSignal: 'SIGTERM',
         nodeArgs: [],
         processArgs: {},
       };

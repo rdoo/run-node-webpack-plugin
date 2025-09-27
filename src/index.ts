@@ -12,6 +12,7 @@ export interface RunNodeWebpackPluginOptions {
   runOnlyInWatchMode?: boolean;
   runOnlyInNormalMode?: boolean;
   ignoreErrors?: boolean;
+  processKillSignal?: NodeJS.Signals | number;
   nodeArgs?: string[];
   processArgs?: ForkOptions;
 }
@@ -33,6 +34,7 @@ export default class RunNodeWebpackPlugin {
       runOnlyInWatchMode: false,
       runOnlyInNormalMode: false,
       ignoreErrors: false,
+      processKillSignal: 'SIGKILL',
       nodeArgs: [],
       processArgs: {},
     };
@@ -174,7 +176,7 @@ export default class RunNodeWebpackPlugin {
           this.launchScriptProcess(outputAssetNames);
         });
         try {
-          this.scriptProcess.kill('SIGKILL');
+          this.scriptProcess.kill(this.options.processKillSignal);
         } catch (error) {
           console.error(error);
         }

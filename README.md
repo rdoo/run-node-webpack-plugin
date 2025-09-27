@@ -151,6 +151,12 @@ When set to `true` plugin will try to run the script even when webpack compilati
 
 **Default: `false`**
 
+### `processKillSignal: string | number`
+
+If the script is still running when webpack completes a subsequent compilation, it must be terminated. This option allows you to specify which signal should be used for termination. For instance, you may want to use `SIGTERM` if your script needs to gracefully handle any requests it has already received. [See the list of available signals](https://man7.org/linux/man-pages/man7/signal.7.html)
+
+**Default: `SIGKILL`**
+
 ### `nodeArgs: string[]`
 
 List of string arguments to pass to the node script.
@@ -163,7 +169,7 @@ List of string arguments to pass to the node script.
 List of options to pass to the process executing the node script.
 [See more information](https://nodejs.org/api/child_process.html#child_processforkmodulepath-args-options)
 
-**Default: `[]`**
+**Default: `{}`**
 
 ## License
 
