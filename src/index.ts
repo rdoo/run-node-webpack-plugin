@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import { join, normalize, parse } from 'path';
 import { Compiler, Stats } from 'webpack';
 
-import { Logger, LoggerMessages } from './logger';
+import { Logger } from './logger';
 
 export interface RunNodeWebpackPluginOptions {
   scriptToRun?: string;
@@ -68,8 +68,8 @@ export default class RunNodeWebpackPlugin {
       const outputPath = compilation.getPath(compiler.outputPath);
 
       // check if output assets dont exist. idk if this can really happen
-      if (outputAssetNames.length < 1) {
-        Logger.error(LoggerMessages.NO_OUTPUT_ASSETS);
+      if (outputAssetNames.length === 0) {
+        Logger.error(Logger.getNoOutputAssetsMessage());
         return;
       }
 
@@ -137,11 +137,10 @@ export default class RunNodeWebpackPlugin {
 
           if (!this.scriptPath) {
             Logger.error(
-              LoggerMessages.NO_SCRIPT_NAME1 +
-                this.options.scriptToRun +
-                LoggerMessages.NO_SCRIPT_NAME2 +
-                outputAssetNames +
-                LoggerMessages.NO_SCRIPT_NAME3
+              Logger.getNoScriptNameMessage(
+                this.options.scriptToRun,
+                outputAssetNames
+              )
             );
             return;
           }
@@ -164,17 +163,13 @@ export default class RunNodeWebpackPlugin {
       }
 
       if (!this.scriptPath) {
-        Logger.error(
-          LoggerMessages.NO_SCRIPT_PATH1 +
-            outputAssetNames +
-            LoggerMessages.NO_SCRIPT_PATH2
-        );
+        Logger.error(Logger.getNoScriptPathMessage(outputAssetNames));
         return;
       }
 
       if (this.scriptProcess && this.scriptProcess.connected) {
         // if scriptProcess is running then kill it and start once again after it closes
-        Logger.info(LoggerMessages.RESTARTING + this.scriptName);
+        Logger.info(Logger.getRestartingMessage(this.scriptName!));
         this.scriptProcess.on('close', () => {
           this.launchScriptProcess(outputAssetNames);
         });
@@ -184,7 +179,7 @@ export default class RunNodeWebpackPlugin {
           console.error(error);
         }
       } else {
-        Logger.info(LoggerMessages.STARTING + this.scriptName);
+        Logger.info(Logger.getStartingMessage(this.scriptName!));
         try {
           this.launchScriptProcess(outputAssetNames);
         } catch (error) {
@@ -196,11 +191,7 @@ export default class RunNodeWebpackPlugin {
 
   private launchScriptProcess(outputAssetNames: string[]) {
     if (!this.scriptPath) {
-      Logger.error(
-        LoggerMessages.NO_SCRIPT_PATH1 +
-          outputAssetNames +
-          LoggerMessages.NO_SCRIPT_PATH2
-      );
+      Logger.error(Logger.getNoScriptPathMessage(outputAssetNames));
       return;
     }
 
