@@ -17,18 +17,18 @@ export interface RunNodeWebpackPluginOptions {
 }
 
 export default class RunNodeWebpackPlugin {
-  options: RunNodeWebpackPluginOptions;
-  isWebpackInWatchMode: boolean = false;
-  isFirstRun: boolean = true;
-  errorsInPrevCompilation: boolean = false;
-  scriptName: string;
-  scriptPath: string;
-  scriptProcess: ChildProcess;
+  private options: RunNodeWebpackPluginOptions;
+  private isWebpackInWatchMode: boolean = false;
+  private isFirstRun: boolean = true;
+  private errorsInPrevCompilation: boolean = false;
+  private scriptName: string | undefined;
+  private scriptPath: string | undefined;
+  private scriptProcess: ChildProcess | undefined;
 
   constructor(passedOptions?: RunNodeWebpackPluginOptions) {
     const defaultOptions: RunNodeWebpackPluginOptions = {
-      scriptToRun: null,
-      scriptsToWatch: null,
+      scriptToRun: undefined,
+      scriptsToWatch: undefined,
       runOnlyOnChanges: true,
       runOnlyInWatchMode: false,
       runOnlyInNormalMode: false,
@@ -64,7 +64,7 @@ export default class RunNodeWebpackPlugin {
 
       const { compilation } = stats;
       const { compiler, emittedAssets, assets: outputAssets } = compilation;
-      const outputAssetNames: string[] = Object.keys(outputAssets);
+      const outputAssetNames = Object.keys(outputAssets);
       const outputPath = compilation.getPath(compiler.outputPath);
 
       // check if output assets dont exist. idk if this can really happen
@@ -73,7 +73,7 @@ export default class RunNodeWebpackPlugin {
         return;
       }
 
-      let shouldRun: boolean = false;
+      let shouldRun = false;
 
       if (!this.options.runOnlyOnChanges || this.errorsInPrevCompilation) {
         // always run node script if runOnlyOnChanges option is falsy or there were errors in previous compilation
@@ -87,14 +87,14 @@ export default class RunNodeWebpackPlugin {
         ) {
           // if scriptsToWatch option is set then check if any of the given scripts changed
           for (const scriptName of this.options.scriptsToWatch) {
-            const matchedName: string = findMatchingScriptName(
+            const matchedName = findMatchingScriptName(
               scriptName,
               outputAssetNames
             );
             if (
               matchedName &&
-              ((emittedAssets && emittedAssets.has(matchedName)) ||
-                (outputAssets[matchedName] as any).emitted)
+              emittedAssets &&
+              emittedAssets.has(matchedName)
             ) {
               shouldRun = true;
               break;
@@ -103,10 +103,7 @@ export default class RunNodeWebpackPlugin {
         } else {
           // if scriptsToWatch option is NOT set then check if any of the output assets changed
           for (const assetName of outputAssetNames) {
-            if (
-              (emittedAssets && emittedAssets.has(assetName)) ||
-              (outputAssets[assetName] as any).emitted
-            ) {
+            if (emittedAssets && emittedAssets.has(assetName)) {
               shouldRun = true;
               break;
             }
@@ -178,15 +175,9 @@ export default class RunNodeWebpackPlugin {
       if (this.scriptProcess && this.scriptProcess.connected) {
         // if scriptProcess is running then kill it and start once again after it closes
         Logger.info(LoggerMessages.RESTARTING + this.scriptName);
-        this.scriptProcess.on(
-          'close',
-          () =>
-            (this.scriptProcess = fork(
-              this.scriptPath,
-              this.options.nodeArgs,
-              this.options.processArgs
-            ))
-        );
+        this.scriptProcess.on('close', () => {
+          this.launchScriptProcess(outputAssetNames);
+        });
         try {
           this.scriptProcess.kill('SIGKILL');
         } catch (error) {
@@ -195,23 +186,36 @@ export default class RunNodeWebpackPlugin {
       } else {
         Logger.info(LoggerMessages.STARTING + this.scriptName);
         try {
-          this.scriptProcess = fork(
-            this.scriptPath,
-            this.options.nodeArgs,
-            this.options.processArgs
-          );
+          this.launchScriptProcess(outputAssetNames);
         } catch (error) {
           console.error(error);
         }
       }
     });
   }
+
+  private launchScriptProcess(outputAssetNames: string[]) {
+    if (!this.scriptPath) {
+      Logger.error(
+        LoggerMessages.NO_SCRIPT_PATH1 +
+          outputAssetNames +
+          LoggerMessages.NO_SCRIPT_PATH2
+      );
+      return;
+    }
+
+    this.scriptProcess = fork(
+      this.scriptPath,
+      this.options.nodeArgs,
+      this.options.processArgs
+    );
+  }
 }
 
 function findMatchingScriptName(
   scriptNameToFind: string,
   scriptNames: string[]
-) {
+): string | undefined {
   // check for literal matching
   for (const name of scriptNames) {
     if (name === scriptNameToFind) {
@@ -226,5 +230,5 @@ function findMatchingScriptName(
     }
   }
 
-  return null;
+  return undefined;
 }
